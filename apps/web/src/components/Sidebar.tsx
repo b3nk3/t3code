@@ -233,6 +233,7 @@ import {
   type SidebarListItem,
   type SidebarListMarker,
   type SidebarSection,
+  handleSidebarRowKeyDown,
 } from "./Sidebar.logic";
 import { resolveLocalCheckoutBranchMismatch } from "./BranchToolbar.logic";
 import {
@@ -4986,6 +4987,7 @@ export default function Sidebar() {
       <SidebarChromeHeader isElectron={isElectron} />
       <SidebarContent
         className="min-h-full"
+        onKeyDown={handleSidebarRowKeyDown}
         fixedHeader={
           // Lifted above the stage backdrop, whose fade bleeds below the
           // header and would otherwise paint across the search row's outline.

@@ -119,7 +119,7 @@ import {
   submitCodexFeedback,
   type CodexFeedbackSubmission,
 } from "@t3tools/client-runtime/state/threads";
-import { resolveThreadLastVisitedAt } from "./Sidebar.logic";
+import { resolveThreadLastVisitedAt, SIDEBAR_ROW_SELECTOR } from "./Sidebar.logic";
 import { derivePendingThreadRequests } from "@t3tools/client-runtime/state/thread-requests";
 import {
   parseScopedThreadKey,
@@ -6720,6 +6720,9 @@ export default function ChatView(props: ChatViewProps) {
   useEffect(() => {
     if (!activeThread?.id || terminalUiState.terminalOpen) return;
     const frame = window.requestAnimationFrame(() => {
+      // Opening a thread from a focused sidebar row keeps focus there so
+      // arrow keys can keep moving through the list.
+      if (document.activeElement?.closest(SIDEBAR_ROW_SELECTOR)) return;
       focusComposerStable();
     });
     return () => {

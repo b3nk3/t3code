@@ -1,4 +1,5 @@
 import { resolveThreadWorkingStartedAt } from "@t3tools/client-runtime/state/models";
+import { dispatchSnapShotComposerFocus } from "../lib/desktopSnapShot";
 import { backgroundWorkHoldsCompletion } from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
 import { threadPullRequestSearchTerms } from "@t3tools/shared/threadPullRequests";
 import * as React from "react";
@@ -1455,4 +1456,50 @@ export function sortScopedProjectsForSidebar<
       left.environmentId.localeCompare(right.environmentId) ||
       left.id.localeCompare(right.id),
   );
+}
+
+export const SIDEBAR_ROW_SELECTOR =
+  '[data-testid="sidebar-row-card"], [data-testid="sidebar-row-slim"], [data-testid="sidebar-draft-row"]';
+
+// Escape in the composer returns here; Enter on a row goes back to the composer.
+export function focusActiveSidebarRow(): boolean {
+  const row = document.querySelector<HTMLElement>(
+    `:is(${SIDEBAR_ROW_SELECTOR})[aria-current="page"]`,
+  );
+  if (!row || row.offsetParent === null) return false;
+  row.focus();
+  return true;
+}
+
+// Up/down on a focused row moves to the adjacent rendered row and opens it.
+// DOM order already reflects sections, sorting, and collapsed groups. Enter
+// (after the row's own handler opens it) hands focus to the composer.
+export function handleSidebarRowKeyDown(
+  event: Pick<
+    React.KeyboardEvent<HTMLElement>,
+    | "key"
+    | "metaKey"
+    | "ctrlKey"
+    | "altKey"
+    | "shiftKey"
+    | "target"
+    | "currentTarget"
+    | "preventDefault"
+  >,
+) {
+  if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+  const row = (event.target as HTMLElement).closest<HTMLElement>(SIDEBAR_ROW_SELECTOR);
+  if (row !== event.target) return;
+  if (event.key === "Enter") {
+    row.blur();
+    dispatchSnapShotComposerFocus();
+    return;
+  }
+  if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+  const rows = [...event.currentTarget.querySelectorAll<HTMLElement>(SIDEBAR_ROW_SELECTOR)];
+  const next = rows[rows.indexOf(row) + (event.key === "ArrowDown" ? 1 : -1)];
+  if (!next) return;
+  event.preventDefault();
+  next.focus();
+  next.click();
 }

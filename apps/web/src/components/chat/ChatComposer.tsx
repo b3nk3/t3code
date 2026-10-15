@@ -1160,6 +1160,7 @@ import { useAtomCommand } from "../../state/use-atom-command";
 import { readEnvironmentScope } from "../../state/session";
 import { serverEnvironment } from "../../state/server";
 import type { ReviewCommentContext } from "../../reviewCommentContext";
+import { focusActiveSidebarRow } from "../Sidebar.logic";
 
 const WORKSPACE_SNAPSHOT_RETRY_COOLDOWN_MS = 10_000;
 
@@ -4403,7 +4404,8 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     const menuIsActive =
       !isLiteralPendingAnswer && (composerMenuOpenRef.current || trigger !== null);
     if (key === "Escape") {
-      if (!menuIsActive || event.isComposing || event.keyCode === 229) return false;
+      if (event.isComposing || event.keyCode === 229) return false;
+      if (!menuIsActive) return focusActiveSidebarRow();
       dismissComposerTrigger(trigger);
       composerMenuOpenRef.current = false;
       return true;
